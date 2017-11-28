@@ -59,6 +59,24 @@ TARGET = {
             'attr': 'read_excel',
             # see comments under 'xls'
             'kwargs': kwargs
-        }
+        },
+        'vcf': {
+        'attr': 'read_csv',
+        'kwargs': {
+           'sep': '\t',
+           'comment': '#',
+           'names': ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO'],
+           'dtype': {'CHROM': 'str',
+                     #'POS': 'float32',
+                     #'ID': 'str',
+                     #'REF': 'str',
+                     #'ALT': 'str',
+                     #'QUAL' : 'str',
+                     #'FILTER': 'str',
+                     #'INFO': 'str'
+                     },
+           'na_values': ['nan', '.'],
+           }
+        }        
     }
 }
