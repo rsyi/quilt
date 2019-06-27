@@ -1,4 +1,4 @@
-import { call, put, select, fork, takeEvery } from 'redux-saga/effects'
+import { call, put, select, fork, takeEvery, delay } from 'redux-saga/effects'
 
 import { apiRequest, HTTPError } from 'utils/APIConnector'
 import defer from 'utils/defer'
@@ -350,6 +350,7 @@ const isExpired = (tokens, time) => {
   return exp && exp < time
 }
 
+const RETRY_DELAYS = [1000, 3000]
 /**
  * Handle CHECK action.
  * Check if the stored tokens are up-to-date.
@@ -381,25 +382,33 @@ function* handleCheck(
     }
 
     yield put(actions.refresh())
-    const newTokens = yield call(refreshTokens, latency, tokens)
-    yield fork(storeTokens, newTokens)
-    let user
-    if (refetch) {
-      user = yield call(fetchUser, newTokens)
-      yield fork(storeUser, user)
+
+    let tries = 0
+    while (true) {
+      try {
+        const newTokens = yield call(refreshTokens, latency, tokens)
+        yield fork(storeTokens, newTokens)
+        let user
+        if (refetch) {
+          user = yield call(fetchUser, newTokens)
+          yield fork(storeUser, user)
+        }
+        const payload = { tokens: newTokens, user }
+        yield put(actions.refresh.resolve(payload))
+        /* istanbul ignore else */
+        if (resolve) yield call(resolve, payload)
+        break
+      } catch (e) {
+        if (e instanceof errors.InvalidToken) throw e
+        if (tries >= RETRY_DELAYS.length) throw e
+        yield call(onAuthError, e)
+        yield delay(RETRY_DELAYS[tries])
+      }
+      tries += 1
     }
-    const payload = { tokens: newTokens, user }
-    yield put(actions.refresh.resolve(payload))
-    /* istanbul ignore else */
-    if (resolve) yield call(resolve, payload)
   } catch (e) {
     yield put(actions.refresh.resolve(e))
-    if (e instanceof errors.InvalidToken) {
-      yield put(actions.authLost(e))
-    } else {
-      yield call(onAuthError, e)
-    }
-    /* istanbul ignore else */
+    yield put(actions.authLost(e))
     if (reject) yield call(reject, e)
   }
 }
