@@ -15,7 +15,7 @@ const addDevMiddlewares = (app, webpackConfig) => {
   const webpackHotMiddleware = require('webpack-hot-middleware');
   const compiler = webpack(webpackConfig);
   const middleware = webpackDevMiddleware(compiler, {
-    logLevel: 'silent',
+    // logLevel: 'silent',
     publicPath: webpackConfig.output.publicPath,
     stats: 'errors-only',
   });
