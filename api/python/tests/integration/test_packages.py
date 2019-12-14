@@ -13,7 +13,7 @@ import pytest
 
 import quilt3
 from quilt3 import Package
-from quilt3.util import QuiltException, validate_package_name, parse_file_url, fix_url
+from quilt3.util import QuiltException, validate_package_name, fix_url
 
 from ..utils import QuiltTestCase
 

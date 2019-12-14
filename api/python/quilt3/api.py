@@ -5,7 +5,7 @@ from .packages import Package
 from .search_util import search_api
 from .util import (QuiltConfig, QuiltException, CONFIG_PATH,
                    CONFIG_TEMPLATE, configure_from_url, fix_url,
-                   get_package_registry, read_yaml, validate_package_name, write_yaml)
+                   get_package_registry, PhysicalKey, read_yaml, validate_package_name, write_yaml)
 from .telemetry import ApiTelemetry
 
 
@@ -20,8 +20,7 @@ def copy(src, dest):
         src (str): a path to retrieve
         dest (str): a path to write to
     """
-    copy_file(fix_url(src), fix_url(dest))
-
+    copy_file(PhysicalKey.parse(fix_url(src)), PhysicalKey.parse(fix_url(dest)))
 
 
 
